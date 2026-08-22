@@ -65,32 +65,32 @@ The multi-feature model meaningfully outperforms the naive Lineoff-only baseline
 ### Historical trends
 Daily total energy usage and daily vehicles produced (Lineoff) across the full two-year window.
 
-**➜ Add: `Running_output.png` here**
+![Historical Trend](Resources/Running_output.png)
 
 ### Feature correlation heatmap
 How strongly each numeric feature relates to total energy usage and to each other, before any model is built.
 
-**➜ Add: `heatmap.png` here**
+![Co-relation Heatmap](Resources/heatmap.png)
 
 ### Historical trend with fitted regression line
 The multi-feature model's fitted values overlaid on actual daily energy usage across the full history, with the train/test split point marked.
 
-**➜ Add: `Histroical_Linear_Regression.png` here**
+![Linear Regression](Resources/Histroical_Linear_Regression.png)
 
 ### Model validation — Actual vs. Predicted
 Predicted vs. actual energy usage on the held-out test set — the real test of whether the model generalizes to unseen data.
 
-**➜ Add the "Actual vs Predicted (Test Set)" chart here**
+![Actual vs Predicted](Resources/Actual_Predicted.png)
 
 ### Efficiency curve
 Energy per vehicle (Gentan-I) plotted against daily production volume, with a fitted efficiency curve — showing the plant getting more efficient per car as volume rises, with diminishing returns at higher output.
 
-**➜ Add: `Efficiency_Curve.png` here**
+![Efficiency Curve](Resources/Efficiency_Curve.png)
 
 ### Interactive daily predictor
 A live widget (sliders + dropdown) for exploring how Lineoff, temperature, rain, shift pattern, shutdown/maintenance status affect predicted daily energy and efficiency in real time.
 
-**➜ Add: `Interactive.gif` here**
+![Interactive Widget](Resources/Interactive.gif) 
 
 ---
 
