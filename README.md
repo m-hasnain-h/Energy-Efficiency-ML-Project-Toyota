@@ -22,7 +22,7 @@ This project is my own proof-of-concept exploration of that idea, built from scr
 
 ## What it does
 
-Given a production plan for the upcoming week — projected vehicles per day, expected temperature, expected rainfall, and shift pattern — the model estimates daily and total weekly energy consumption (kWh), and the resulting energy-per-vehicle efficiency (**Gentan-I**).
+Given a production plan for the upcoming week which contains projected vehicles per day, expected temperature, expected rainfall, and shift pattern, the model estimates daily and total weekly energy consumption (kWh), and the resulting energy-per-vehicle efficiency (**Gentan-I**).
 
 ---
 
@@ -106,6 +106,44 @@ The multi-feature model meaningfully outperforms the naive Lineoff-only baseline
 ## Tech stack
 
 `pandas` · `numpy` · `matplotlib` · `scikit-learn` (LinearRegression) · `ipywidgets`
+
+---
+
+## How it works, in more detail
+
+This section is for anyone who wants to actually understand the code rather than just run it. It walks through the reasoning behind each major step, roughly in the order the notebook runs.
+
+### Cleaning the data first
+
+Before any modeling happens, the `Date` column gets explicitly converted to a real datetime type and the whole dataframe gets sorted by it. This sounds trivial, but it's the step that actually turns the data into a time series. Everything downstream (the train/test split, the trend charts) depends on the rows being in true chronological order, so it's never safe to just assume the file was already sorted correctly.
+
+The `Shutdown_Week` and `Maintenance_Day` columns start out as plain "Yes"/"No" text, which a model can't do math on, so those get converted into 1s and 0s. `Shift_Pattern` gets handled differently though, since it has three categories (1-Shift, 2-Shift, 3-Shift) instead of two. Turning that into a single 0/1/2 column would accidentally tell the model that "3-Shift" is mathematically "more" than "1-Shift" in a way that isn't true, it's just a category, not a quantity. Instead it's one-hot encoded, meaning it becomes two separate columns (`Shift_Pattern_2-Shift`, `Shift_Pattern_3-Shift`), each just a 1 or 0 flag. Only two columns are needed for three categories because if a day isn't 2-Shift and isn't 3-Shift, it has to be 1-Shift, so that third column would carry no new information.
+
+### Why the split has to be chronological
+
+A normal machine learning workflow often splits data randomly into train and test sets. Doing that here would be a mistake. If a random 20% of days landed in the test set, some of those days could sit right in the middle of the training period, meaning the model would effectively get to "peek" at patterns from the near future while learning. The whole point of this project is forecasting forward in time, so the test set has to be the most recent slice of days the model has genuinely never seen anything from or after. That's why the split is done with `.iloc[:split_index]` and `.iloc[split_index:]` on the already-sorted data, rather than `train_test_split` with shuffling.
+
+### What the regression is actually learning
+
+Linear regression is just fitting the equation `y = intercept + (coefficient × feature)` for however many features you give it, adjusting the intercept and coefficients until the average error across the training data is as small as possible. In the baseline model, that's literally `Total (KWh) = intercept + slope × Lineoff`. The slope tells you roughly how many extra kWh get used per additional car produced, and the intercept is a rough estimate of the plant's fixed energy draw even before accounting for any cars.
+
+Adding more features (temperature, rain, shift pattern, shutdown/maintenance flags) doesn't change the underlying idea, it just gives the model more variables to assign a coefficient to, so it can account for more of what's driving the day-to-day differences instead of dumping all of that variation onto Lineoff alone. Worth noting, when more features got added, Lineoff's own coefficient actually dropped compared to the baseline model. That's not a bug, it's because in the baseline model, Lineoff was silently absorbing some of the effect that really belonged to shift pattern (more shifts generally means more cars *and* more fixed energy draw, all bundled into one number). Once shift pattern got its own column, Lineoff's coefficient shrank down to reflect just its own actual marginal effect.
+
+### Building the efficiency curve
+
+Gentan-I is just `Total (KWh) ÷ Lineoff`, so once you already have the baseline model's predicted Total for a range of possible Lineoff values, you can divide that predicted Total by the same Lineoff values to get a predicted Gentan-I curve. Because the underlying relationship is a straight line with a fixed baseline cost, dividing by an increasing Lineoff naturally produces a curve that drops quickly at low volumes (where that fixed cost gets spread across very few cars) and flattens out as volume increases, gradually approaching the slope value as its floor. That's why the curve looks the way it does instead of being a straight line itself.
+
+### The prediction function and why it needs a full row
+
+`predict_daily_energy()` takes in plain, human-friendly arguments like `lineoff`, `avg_temp_c`, and `shift_pattern`, but internally it has to rebuild a single-row table with the exact same column names, in the same format, that the model was originally trained on, including manually recreating the one-hot encoded shift columns. Scikit-learn models don't understand the text "2-Shift" at all, they only know about the columns they were trained on, so this translation step has to happen every single time a prediction is made, not just once during training.
+
+### Handling weekends and idle days without guessing blindly
+
+The training data never contains a day where Lineoff is anywhere close to zero, the lowest real value was 15. That means asking the model to predict a true zero-production day would be extrapolating well outside anything it actually learned from, and there's no good reason to trust that guess. Instead, weekends and other days off use a fixed number pulled directly from real historical data: the average `Total (KWh)` across all the days already flagged as `Shutdown_Week` in the dataset. That's a genuine empirical average from comparable real low-activity days, rather than a number invented by extrapolating a line past where it has any evidence to stand on.
+
+### Reading the validation charts
+
+The historical fit chart and the actual-vs-predicted scatter plot exist to answer one question: does the model's accuracy hold up on data it never trained on, not just on data it already memorized the pattern of. The actual-vs-predicted chart in particular is where the extreme-value bias becomes visible, predictions for very low or very high actual days drift away from the diagonal "perfect prediction" line, while predictions in the normal working range stay close to it. That's the kind of thing a single R² number won't show you on its own, which is why both charts are included rather than just reporting the score.
 
 ---
 
