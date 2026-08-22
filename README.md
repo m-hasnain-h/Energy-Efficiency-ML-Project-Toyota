@@ -20,6 +20,40 @@ This project is my own proof-of-concept exploration of that idea, built from scr
 
 ---
 
+## Visuals
+
+### Interactive daily predictor
+A live widget (sliders + dropdown) for exploring how Lineoff, temperature, rain, shift pattern, shutdown/maintenance status affect predicted daily energy and efficiency in real time.
+
+![Interactive Widget](Resources/Interactive.gif) 
+
+### Historical trends
+Daily total energy usage and daily vehicles produced (Lineoff) across the full two-year window.
+
+![Historical Trend](Resources/Running_output.png)
+
+### Feature correlation heatmap
+How strongly each numeric feature relates to total energy usage and to each other, before any model is built.
+
+![Co-relation Heatmap](Resources/heatmap.png)
+
+### Historical trend with fitted regression line
+The multi-feature model's fitted values overlaid on actual daily energy usage across the full history, with the train/test split point marked.
+
+![Linear Regression](Resources/Histroical_Linear_Regression.png)
+
+### Model validation — Actual vs. Predicted
+Predicted vs. actual energy usage on the held-out test set — the real test of whether the model generalizes to unseen data.
+
+![Actual vs Predicted](Resources/Actual_Predicted.png)
+
+### Efficiency curve
+Energy per vehicle (Gentan-I) plotted against daily production volume, with a fitted efficiency curve — showing the plant getting more efficient per car as volume rises, with diminishing returns at higher output.
+
+![Efficiency Curve](Resources/Efficiency_Curve.png)
+
+---
+
 ## What it does
 
 Given a production plan for the upcoming week — projected vehicles per day, expected temperature, expected rainfall, and shift pattern — the model estimates daily and total weekly energy consumption (kWh), and the resulting energy-per-vehicle efficiency (**Gentan-I**).
@@ -57,40 +91,6 @@ Two versions were built and compared:
 The multi-feature model meaningfully outperforms the naive Lineoff-only baseline, confirming that weather, shift pattern, and shutdown/maintenance status carry real signal — not just Lineoff on its own.
 
 **A known limitation, found through validation:** the model performs well on typical, mid-range production days, but shows a systematic bias at the extremes — it tends to over-predict very low-usage days (shutdowns) and under-predict very high-usage days. This is a well-known behavior of linear regression (it optimizes for average error, pulling extreme predictions toward the mean) and is exactly the kind of finding this project was meant to surface — trust the model most for routine weeks, and sanity-check it more carefully around planned shutdowns or exceptional demand.
-
----
-
-## Visuals
-
-### Historical trends
-Daily total energy usage and daily vehicles produced (Lineoff) across the full two-year window.
-
-![Historical Trend](Resources/Running_output.png)
-
-### Feature correlation heatmap
-How strongly each numeric feature relates to total energy usage and to each other, before any model is built.
-
-![Co-relation Heatmap](Resources/heatmap.png)
-
-### Historical trend with fitted regression line
-The multi-feature model's fitted values overlaid on actual daily energy usage across the full history, with the train/test split point marked.
-
-![Linear Regression](Resources/Histroical_Linear_Regression.png)
-
-### Model validation — Actual vs. Predicted
-Predicted vs. actual energy usage on the held-out test set — the real test of whether the model generalizes to unseen data.
-
-![Actual vs Predicted](Resources/Actual_Predicted.png)
-
-### Efficiency curve
-Energy per vehicle (Gentan-I) plotted against daily production volume, with a fitted efficiency curve — showing the plant getting more efficient per car as volume rises, with diminishing returns at higher output.
-
-![Efficiency Curve](Resources/Efficiency_Curve.png)
-
-### Interactive daily predictor
-A live widget (sliders + dropdown) for exploring how Lineoff, temperature, rain, shift pattern, shutdown/maintenance status affect predicted daily energy and efficiency in real time.
-
-![Interactive Widget](Resources/Interactive.gif) 
 
 ---
 
