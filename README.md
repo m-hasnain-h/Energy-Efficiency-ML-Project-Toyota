@@ -20,6 +20,12 @@ This project is my own proof-of-concept exploration of that idea, built from scr
 
 ---
 
+## What it does
+
+Given a production plan for the upcoming week — projected vehicles per day, expected temperature, expected rainfall, and shift pattern — the model estimates daily and total weekly energy consumption (kWh), and the resulting energy-per-vehicle efficiency (**Gentan-I**).
+
+---
+
 ## Visuals
 
 ### Interactive daily predictor
@@ -51,12 +57,6 @@ Predicted vs. actual energy usage on the held-out test set — the real test of 
 Energy per vehicle (Gentan-I) plotted against daily production volume, with a fitted efficiency curve — showing the plant getting more efficient per car as volume rises, with diminishing returns at higher output.
 
 ![Efficiency Curve](Resources/Efficiency_Curve.png)
-
----
-
-## What it does
-
-Given a production plan for the upcoming week — projected vehicles per day, expected temperature, expected rainfall, and shift pattern — the model estimates daily and total weekly energy consumption (kWh), and the resulting energy-per-vehicle efficiency (**Gentan-I**).
 
 ---
 
